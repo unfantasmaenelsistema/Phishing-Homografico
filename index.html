@@ -1,409 +1,590 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test de Phishing Homográfico</title>
-    <style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phishing Homográfico · Un Fantasma en el Sistema</title>
+<meta name="description" content="Test interactivo y analizador de dominios homográficos: aprende a detectar enlaces que mezclan letras cirílicas o griegas con latinas. 100% en el navegador.">
+<link rel="icon" href="icono.png">
+<script>
+  // Tema antes de pintar, para que no parpadee
+  (function(){
+    var t=null;try{t=localStorage.getItem('phh-theme');}catch(e){}
+    if(!t)t=(window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches)?'light':'dark';
+    document.documentElement.setAttribute('data-theme',t);
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0b0d14;--panel:#131726;--panel2:#1a1f33;--border:#272d45;--text:#e8eaf3;--muted:#99a1b8;
+  --accent:#8b5cf6;--accent2:#22d3ee;--ok:#22c55e;--okbg:rgba(34,197,94,.12);--bad:#f43f5e;--badbg:rgba(244,63,94,.12);
+  --warn:#f59e0b;--warnbg:rgba(245,158,11,.12);--mail:#f8f9fc;--mailtext:#1f2333;--mailmuted:#626b80;--mailborder:#dde1ea;
+  --shadow:0 10px 30px rgba(0,0,0,.35);
+}
+[data-theme="light"]{
+  --bg:#f3f4f9;--panel:#ffffff;--panel2:#f6f7fb;--border:#dfe2ec;--text:#1a1d2b;--muted:#5d6479;
+  --accent:#6d4fe0;--accent2:#0891b2;--ok:#15803d;--okbg:rgba(21,128,61,.09);--bad:#be123c;--badbg:rgba(190,18,60,.08);
+  --warn:#b45309;--warnbg:rgba(180,83,9,.08);--mail:#ffffff;--mailborder:#dfe2ec;--shadow:0 8px 24px rgba(30,35,60,.08);
+}
+html{background:var(--bg)}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;line-height:1.55}
+a{color:var(--accent2)}
+button{font-family:inherit}
+code{font-family:Consolas,'Courier New',monospace;font-size:.92em;background:var(--panel2);border:1px solid var(--border);padding:1px 6px;border-radius:5px}
 
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            color: #333;
-            display: flex;
-            flex-direction: column; /* CLAVE 1: Apila los elementos verticalmente (body, container, footer) */
-            justify-content: flex-start; /* CLAVE 2: Inicia el contenido desde la parte superior */
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            max-width: 700px;
-            width: 100%;
-            flex-grow: 1; /* CLAVE 3: Hace que el contenedor principal ocupe todo el espacio restante, empujando el footer hacia abajo */
-        }
-        footer {
-            width: 100%;
-            max-width: 700px; /* Para alinear el texto del copyright con el contenedor principal */
-            text-align: center;
-            padding-top: 10px;
-            font-size: 0.9em;
-            color: #6c757d;
-        }
-   
-        
-        h1, h2 {
-            text-align: center;
-            color: #0056b3;
-            margin-bottom: 20px;
-        }
-        .email-container {
-            border: 1px solid #ddd;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 5px;
-            background-color: #fafafa;
-        }
-        .email-header, .email-body {
-            margin-bottom: 10px;
-            line-height: 1.6;
-        }
-        .email-header strong {
-            display: inline-block;
-            width: 60px;
-            color: #555;
-        }
-        .phishing-url {
-            color: #c00;
-            font-weight: bold;
-            text-decoration: underline;
-            cursor: pointer;
-        }
-        .buttons {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 20px;
-        }
-        .button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: background-color 0.3s ease;
-            width: 45%;
-        }
-        .button.start-button {
-            width: auto;
-            min-width: 150px;
-            margin: 0 auto;
-            display: block;
-        }
-        .correct {
-            background-color: #28a745;
-            color: white;
-        }
-        .correct:hover {
-            background-color: #218838;
-        }
-        .phishing {
-            background-color: #dc3545;
-            color: white;
-        }
-        .phishing:hover {
-            background-color: #c82333;
-        }
-        .feedback {
-            margin-top: 20px;
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
-            font-weight: bold;
-            display: none;
-        }
-        .feedback.correct-answer {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .feedback.wrong-answer {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        #result-summary {
-            text-align: center;
-        }
-        .hidden {
-            display: none;
-        }
-        .intro-screen p {
-            margin-bottom: 15px;
-            line-height: 1.6;
-        }
-        .character-example {
-            background-color: #e9ecef;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 20px 0;
-            text-align: center;
-            font-family: monospace; /* Para que los caracteres se vean más parecidos en ancho */
-            font-size: 1.1em;
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-        }
-        .char-group {
-            border: 1px solid #ced4da;
-            padding: 10px;
-            border-radius: 5px;
-            flex: 1;
-            max-width: 48%;
-            text-align: left;
-        }
-        .char-group span {
-            display: block;
-            margin-bottom: 5px;
-        }
-        .char-group .latin {
-            color: #007bff;
-            font-weight: bold;
-        }
-        .char-group .cyrillic {
-            color: #dc3545;
-            font-weight: bold;
-        }
-        .char-group .label {
-            font-size: 0.9em;
-            color: #6c757d;
-            font-weight: normal;
-            display: inline;
-        }
-    </style>
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 24px;border-bottom:1px solid var(--border);background:color-mix(in srgb,var(--panel) 88%,transparent);position:sticky;top:0;z-index:10;backdrop-filter:blur(8px)}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)}
+.logo img{width:38px;height:38px;border-radius:50%;transition:transform .25s}
+.logo:hover img{transform:rotate(-8deg) scale(1.06)}
+.logo span{font-family:'Syne',sans-serif;font-weight:800;font-size:19px;letter-spacing:-.3px}
+.logo span b{color:var(--accent)}
+.hdr-right{display:flex;align-items:center;gap:8px}
+.site-link{color:var(--muted);text-decoration:none;font-size:13px;margin-right:6px}
+.site-link:hover{color:var(--text)}
+.hdr-btn{background:var(--panel2);border:1px solid var(--border);color:var(--text);border-radius:8px;height:34px;min-width:38px;padding:0 10px;cursor:pointer;font-weight:700;font-size:13px}
+.hdr-btn:hover{border-color:var(--accent)}
+
+main{flex:1;width:100%;max-width:860px;margin:0 auto;padding:26px 18px 40px}
+.tabs{display:flex;gap:6px;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:5px;margin-bottom:22px}
+.tab{flex:1;border:0;background:transparent;color:var(--muted);padding:10px;border-radius:8px;cursor:pointer;font-weight:700;font-size:15px}
+.tab.active{background:var(--accent);color:#fff}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:28px;box-shadow:var(--shadow)}
+h1{font-family:'Syne',sans-serif;font-size:30px;line-height:1.15;margin-bottom:10px;letter-spacing:-.5px}
+h2{font-family:'Syne',sans-serif;font-size:21px;margin:22px 0 10px}
+h3{font-size:16px;margin:18px 0 8px}
+p{margin-bottom:12px}
+.lead{color:var(--muted);font-size:16.5px}
+.hidden{display:none!important}
+
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+.cmp{background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.cmp .t{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;margin-bottom:6px}
+.cmp .d{font-family:Arial,Helvetica,'Segoe UI',sans-serif;font-size:22px;font-weight:600}
+.cmp .p{font-family:Consolas,monospace;font-size:13px;color:var(--muted);margin-top:4px;word-break:break-all}
+.cmp.bad{border-color:color-mix(in srgb,var(--bad) 45%,var(--border))}
+.cmp.bad .p{color:var(--bad)}
+ul.tips{margin:6px 0 14px 20px}
+ul.tips li{margin-bottom:6px}
+
+.btn{border:0;border-radius:10px;padding:12px 22px;font-weight:700;font-size:15.5px;cursor:pointer;transition:transform .1s,filter .15s}
+.btn:active{transform:scale(.98)}
+.btn:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.45;cursor:default;filter:none;transform:none}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-ok{background:var(--ok);color:#fff}
+.btn-bad{background:var(--bad);color:#fff}
+.btn-ghost{background:var(--panel2);color:var(--text);border:1px solid var(--border)}
+.center{text-align:center}
+.kbd{font-size:11.5px;opacity:.75;font-weight:600;margin-left:6px;border:1px solid currentColor;border-radius:4px;padding:0 5px}
+
+.qtop{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-weight:700}
+.qtop .score{color:var(--muted);font-weight:600}
+.bar{height:6px;background:var(--panel2);border-radius:99px;overflow:hidden;margin-bottom:18px;border:1px solid var(--border)}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0;transition:width .35s}
+
+/* El correo usa Arial a propósito: tiene glifos cirílicos y griegos idénticos a los latinos,
+   igual que los clientes de correo reales. Con una fuente sin cirílico el truco se notaría. */
+.mail{background:var(--mail);color:var(--mailtext);border:1px solid var(--mailborder);border-radius:12px;overflow:hidden;font-family:Arial,Helvetica,'Segoe UI',sans-serif}
+.mail-head{padding:14px 18px;border-bottom:1px solid var(--mailborder);background:color-mix(in srgb,var(--mail) 94%,#8b5cf6)}
+.mail-subject{font-size:18px;font-weight:700;margin-bottom:8px}
+.mail-row{font-size:14px;color:var(--mailmuted);display:flex;gap:8px;flex-wrap:wrap}
+.mail-row b{color:var(--mailtext);font-weight:600;min-width:42px}
+.mail-body{padding:18px;font-size:15px}
+.mail-body p{margin-bottom:12px}
+.mail-cta{display:inline-block;background:#1a73e8;color:#fff;text-decoration:none;padding:10px 18px;border-radius:6px;font-weight:700;margin:4px 0 10px}
+.mail-link{color:#1a0dab;text-decoration:underline;word-break:break-all;font-size:15px}
+.mail-status{font-size:12.5px;color:var(--mailmuted);border-top:1px solid var(--mailborder);padding:7px 18px;background:color-mix(in srgb,var(--mail) 96%,#000);min-height:31px;word-break:break-all}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+
+.fb{margin-top:18px;border-radius:12px;padding:16px 18px;border:1px solid}
+.fb.ok{background:var(--okbg);border-color:color-mix(in srgb,var(--ok) 40%,transparent)}
+.fb.ko{background:var(--badbg);border-color:color-mix(in srgb,var(--bad) 40%,transparent)}
+.fb-title{font-weight:800;font-size:17px;margin-bottom:6px}
+.fb.ok .fb-title{color:var(--ok)}
+.fb.ko .fb-title{color:var(--bad)}
+.next{margin-top:14px;display:flex;justify-content:flex-end}
+
+.host{font-family:Arial,Helvetica,'Segoe UI',sans-serif;font-size:24px;font-weight:600;display:flex;flex-wrap:wrap;gap:0;margin:10px 0;word-break:break-all}
+.host span{padding:1px 1px;border-radius:5px;border:1px solid transparent}
+.host span.sus{background:var(--badbg);border-color:var(--bad);color:var(--bad);cursor:help}
+.host span.dot{padding:2px 0;color:var(--muted)}
+.facts{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:14.5px;margin-top:8px}
+.facts dt{color:var(--muted);font-weight:600}
+.facts dd{font-family:Consolas,monospace;word-break:break-all}
+.facts dd.seen{font-family:Arial,Helvetica,'Segoe UI',sans-serif;font-size:15.5px}
+table.chars{border-collapse:collapse;width:100%;margin-top:12px;font-size:14px}
+table.chars th,table.chars td{border-bottom:1px solid var(--border);padding:6px 8px;text-align:left}
+table.chars th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+table.chars td.g{font-family:Arial,Helvetica,sans-serif;font-size:19px;font-weight:600}
+table.chars tr.sus td{color:var(--bad);font-weight:700}
+
+.verdict{border-radius:12px;padding:14px 16px;margin-top:14px;border:1px solid}
+.verdict.safe{background:var(--okbg);border-color:color-mix(in srgb,var(--ok) 35%,transparent)}
+.verdict.info{background:var(--warnbg);border-color:color-mix(in srgb,var(--warn) 35%,transparent)}
+.verdict.danger{background:var(--badbg);border-color:color-mix(in srgb,var(--bad) 45%,transparent)}
+.verdict b{display:block;font-size:17px;margin-bottom:4px}
+.verdict.safe b{color:var(--ok)}.verdict.info b{color:var(--warn)}.verdict.danger b{color:var(--bad)}
+
+.big-score{font-family:'Syne',sans-serif;font-size:58px;font-weight:800;line-height:1;margin:10px 0 6px;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.review{list-style:none;margin:16px 0}
+.review li{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;background:var(--panel2)}
+.review .mark{font-size:18px;width:24px;text-align:center}
+.review .dom{font-family:Arial,Helvetica,sans-serif;font-weight:600;flex:1;word-break:break-all}
+.review .tag{font-size:12px;font-weight:700;padding:3px 9px;border-radius:99px}
+.tag.ph{background:var(--badbg);color:var(--bad)}
+.tag.lg{background:var(--okbg);color:var(--ok)}
+.note{background:var(--panel2);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:10px;padding:14px 16px;margin:16px 0;font-size:15px}
+
+.an-input{display:flex;gap:10px;margin:14px 0 10px}
+.an-input input{flex:1;min-width:0;background:var(--panel2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:12px 14px;font-size:16px;font-family:Arial,Helvetica,sans-serif}
+.an-input input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px}
+.chip{background:var(--panel2);border:1px solid var(--border);color:var(--text);border-radius:99px;padding:5px 12px;font-size:13.5px;cursor:pointer;font-family:Arial,Helvetica,sans-serif}
+.chip:hover{border-color:var(--accent)}
+.muted{color:var(--muted)}
+.small{font-size:13.5px}
+
+.site-footer{border-top:1px solid var(--border);padding:18px 24px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;background:var(--panel)}
+.footer-brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)}
+.footer-name{font-weight:700;font-size:14px}
+.footer-sub{font-size:12px;color:var(--muted)}
+.footer-links{display:flex;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.footer-links a{color:var(--muted)}
+.footer-links a:hover{color:var(--text)}
+
+@media (max-width:640px){
+  header{padding:10px 14px}
+  .site-link{display:none}
+  .logo span{font-size:16px}
+  .logo img{width:32px;height:32px}
+  main{padding:18px 12px 30px}
+  .card{padding:20px 16px}
+  h1{font-size:25px}
+  .compare,.choices{grid-template-columns:1fr}
+  .host{font-size:20px}
+  .an-input{flex-direction:column}
+}
+</style>
 </head>
 <body>
 
-<div class="container">
-    <h1 id="main-title">Test de Phishing Homográfico</h1>
-    
-    <div id="intro-screen">
-        <h2>¿Qué es el Phishing Homográfico?</h2>
-        <p>El phishing homográfico es un tipo de ataque cibernético donde los atacantes utilizan nombres de dominio que son visualmente similares a los dominios legítimos. Esto se logra sustituyendo caracteres latinos por caracteres de otros alfabetos (como el cirílico) que se ven idénticos o casi idénticos.</p>
-        <p>El objetivo es engañar al usuario para que crea que está visitando un sitio web real, cuando en realidad está en una página falsa diseñada para robar sus credenciales o información personal.</p>
+<header>
+  <a href="https://www.unfantasmaenelsistema.com" target="_blank" rel="noopener" class="logo">
+    <img src="icono.png" alt="Un Fantasma en el Sistema">
+    <span>Phishing <b>Homográfico</b></span>
+  </a>
+  <div class="hdr-right">
+    <a href="https://www.unfantasmaenelsistema.com" target="_blank" rel="noopener" class="site-link">unfantasmaenelsistema.com</a>
+    <button id="langToggle" class="hdr-btn" onclick="toggleLang()" title="English">EN</button>
+    <button id="themeToggle" class="hdr-btn" onclick="toggleTheme()" title="Cambiar tema">☀</button>
+  </div>
+</header>
 
-        <h3>Ejemplo de Caracteres</h3>
-        <p>Observa cómo algunos caracteres latinos y cirílicos pueden ser indistinguibles a simple vista:</p>
-        <div class="character-example">
-            <div class="char-group">
-                <span><span class="latin">google.com</span> <span class="label">(Latino)</span></span>
-                <span><span class="cyrillic">gооglе.com</span> <span class="label">(Cirílico: 'o', 'e')</span></span>
-                <span><span class="latin">paypal.com</span> <span class="label">(Latino)</span></span>
-                <span><span class="cyrillic">раypal.com</span> <span class="label">(Cirílico: 'p', 'a')</span></span>
-            </div>
-            <div class="char-group">
-                <span><span class="latin">a</span> <span class="label">(Latino)</span> vs <span class="cyrillic">а</span> <span class="label">(Cirílico)</span></span>
-                <span><span class="latin">o</span> <span class="label">(Latino)</span> vs <span class="cyrillic">о</span> <span class="label">(Cirílico)</span></span>
-                <span><span class="latin">e</span> <span class="label">(Latino)</span> vs <span class="cyrillic">е</span> <span class="label">(Cirílico)</span></span>
-                <span><span class="latin">p</span> <span class="label">(Latino)</span> vs <span class="cyrillic">р</span> <span class="label">(Cirílico)</span></span>
-            </div>
+<main>
+  <div class="tabs" role="tablist">
+    <button class="tab active" id="tab-test" role="tab" onclick="showTab('test')" data-i18n="tabTest">Test</button>
+    <button class="tab" id="tab-an" role="tab" onclick="showTab('an')" data-i18n="tabAn">Analizador de dominios</button>
+  </div>
+
+  <!-- ═════════ TEST ═════════ -->
+  <section id="panel-test">
+    <div id="intro" class="card">
+      <h1 data-i18n="introTitle">¿Distinguirías un dominio falso que se ve idéntico al real?</h1>
+      <p class="lead" data-i18n="introLead">El phishing homográfico registra dominios que cambian letras latinas por otras de alfabetos distintos (cirílico, griego…) que se dibujan igual. A la vista es el mismo nombre; para Internet es otro dominio, de otra persona.</p>
+
+      <div class="compare">
+        <div class="cmp">
+          <div class="t" data-i18n="cmpReal">Real</div>
+          <div class="d">paypal.com</div>
+          <div class="p">paypal.com</div>
         </div>
-        <p>A continuación, te presentaremos 10 correos electrónicos simulados. Tu tarea será identificar cuáles son legítimos y cuáles son un intento de phishing homográfico. ¡Presta mucha atención a los enlaces!</p>
-        <button class="button correct start-button" onclick="startQuiz()">Comenzar Test</button>
-    </div>
-    
-    <div id="quiz-screen" class="hidden">
-        <h2 id="question-counter"></h2>
-        
-        <div class="email-container">
-            <h3>Asunto: <span id="email-subject"></span></h3>
-            <div class="email-header">
-                <strong>De:</strong> <span id="email-sender"></span><br>
-                <strong>Para:</strong> Usuario
-            </div>
-            <hr>
-            <div class="email-body">
-                <p>Estimado/a Usuario,</p>
-                <p id="email-text"></p>
-                <p>Para verificar su cuenta, por favor haga click en el siguiente enlace:</p>
-                <p><a href="#" class="phishing-url" id="email-link"></a></p>
-                <p>Gracias,<br>El equipo de Seguridad.</p>
-            </div>
+        <div class="cmp bad">
+          <div class="t" data-i18n="cmpFake">Falso (р y а cirílicas)</div>
+          <div class="d" id="demoFake"></div>
+          <div class="p" id="demoFakeAscii"></div>
         </div>
+      </div>
 
-        <div class="buttons">
-            <button class="button correct" onclick="checkAnswer(true)">✅ Legítimo</button>
-            <button class="button phishing" onclick="checkAnswer(false)">⚠️ Phishing</button>
-        </div>
+      <p data-i18n-html="introHow">Lo de abajo de cada caja es lo que el sistema de nombres de dominio (DNS) ve de verdad. Los dominios con letras que no son ASCII se registran en <b>punycode</b>, con el prefijo <code>xn--</code>: por eso <code>xn--ypal-43d9g.com</code> no tiene nada que ver con PayPal.</p>
 
-        <div id="feedback-message" class="feedback"></div>
-        <button id="next-button" class="button correct hidden" onclick="nextQuestion()">Siguiente Correo</button>
-
+      <h3 data-i18n="introTest">Cómo va el test</h3>
+      <ul class="tips">
+        <li data-i18n-html="tip1">Verás <b>10 correos</b> elegidos al azar de un banco de 16. Algunos enlazan al dominio auténtico y otros a un homógrafo.</li>
+        <li data-i18n-html="tip2">Decide solo mirando el <b>dominio del enlace</b>: el texto del correo es igual de convincente en los dos casos, como en la vida real.</li>
+        <li data-i18n-html="tip3">Tras cada respuesta verás letra por letra qué carácter era el impostor y su código Unicode.</li>
+        <li data-i18n-html="tip4">Atajos: <b>L</b> legítimo · <b>P</b> phishing · <b>Intro</b> siguiente.</li>
+      </ul>
+      <div class="center" style="margin-top:20px"><button class="btn btn-primary" onclick="startQuiz()" data-i18n="start">Empezar el test</button></div>
     </div>
 
-    <div id="result-screen" class="hidden">
-        <h2>🎉 Resultados del Test</h2>
-        <p>Has completado el test. ¡Aquí está tu puntuación!</p>
-        <div id="result-summary"></div>
-        <p>Recuerda: El Phishing Homográfico utiliza caracteres de diferentes alfabetos (como el cirílico) que se parecen visualmente a letras latinas, haciendo que sea muy difícil distinguir un dominio real de uno falso (ej: <code>gооglе.com</code> vs <code>google.com</code>).</p>
-        <button class="button correct" onclick="location.reload()">Reiniciar Test</button>
+    <div id="quiz" class="card hidden">
+      <div class="qtop"><span id="qCounter"></span><span class="score" id="qScore"></span></div>
+      <div class="bar"><i id="qBar"></i></div>
+
+      <div class="mail">
+        <div class="mail-head">
+          <div class="mail-subject" id="mSubject"></div>
+          <div class="mail-row"><b data-i18n="from">De:</b><span id="mFrom"></span></div>
+          <div class="mail-row"><b data-i18n="to">Para:</b><span data-i18n="toYou">tú</span></div>
+        </div>
+        <div class="mail-body">
+          <p data-i18n="hello">Hola:</p>
+          <p id="mBody"></p>
+          <a href="#" class="mail-cta" id="mCta" onclick="return false"></a>
+          <p class="small" style="color:var(--mailmuted)" data-i18n="orCopy">Si el botón no funciona, copie este enlace en su navegador:</p>
+          <a href="#" class="mail-link" id="mLink" onclick="return false"></a>
+        </div>
+        <div class="mail-status" id="mStatus" data-i18n-title="statusTitle"></div>
+      </div>
+
+      <div class="choices">
+        <button class="btn btn-ok" id="bLegit" onclick="answer(false)"><span data-i18n="legit">✅ Legítimo</span><span class="kbd">L</span></button>
+        <button class="btn btn-bad" id="bPhish" onclick="answer(true)"><span data-i18n="phish">⚠️ Phishing</span><span class="kbd">P</span></button>
+      </div>
+
+      <div id="feedback" class="hidden"></div>
+      <div class="next hidden" id="nextWrap"><button class="btn btn-primary" id="bNext" onclick="nextQ()"></button></div>
     </div>
 
-</div>
+    <div id="results" class="card hidden">
+      <h1 class="center" data-i18n="resTitle">Resultado</h1>
+      <div class="center"><div class="big-score" id="rScore"></div><p class="lead" id="rMsg"></p></div>
+      <h3 data-i18n="resReview">Repaso</h3>
+      <ul class="review" id="rList"></ul>
+      <div class="note" data-i18n-html="resNote"><b>Ojo con «legítimo».</b> Aquí significa que el enlace va al dominio auténtico. Un correo puede llevar un remitente suplantado y aun así ser fraude: si te pide datos o prisa, entra tú escribiendo la dirección o desde la app oficial.</div>
+      <h3 data-i18n="defTitle">Cómo protegerte</h3>
+      <ul class="tips">
+        <li data-i18n-html="def1">Usa un <b>gestor de contraseñas</b>: rellena por dominio exacto y no reconocerá <code>xn--ypal-43d9g.com</code> como PayPal.</li>
+        <li data-i18n-html="def2">No entres a bancos ni tiendas desde enlaces de correos o SMS: escribe la dirección o usa un marcador.</li>
+        <li data-i18n-html="def3">Si la barra de direcciones muestra <code>xn--</code> en un sitio que crees conocer, sal de ahí: los navegadores lo enseñan así cuando detectan mezcla de alfabetos.</li>
+        <li data-i18n-html="def4">¿Dudas con un enlace? Pégalo en el <a href="#" onclick="showTab('an');return false">analizador</a>.</li>
+      </ul>
+      <div class="center" style="margin-top:18px"><button class="btn btn-primary" onclick="startQuiz()" data-i18n="again">Repetir con otros correos</button></div>
+    </div>
+  </section>
 
+  <!-- ═════════ ANALIZADOR ═════════ -->
+  <section id="panel-an" class="hidden">
+    <div class="card">
+      <h1 data-i18n="anTitle">Analizador de dominios</h1>
+      <p class="lead" data-i18n="anLead">Pega un enlace, un dominio o una dirección de correo. Te dice qué alfabeto usa cada letra, a qué letra latina imita y cómo se registra de verdad.</p>
+      <div class="an-input">
+        <input id="anIn" type="text" autocomplete="off" spellcheck="false" placeholder="https://www.ejemplo.com/ruta" oninput="runAnalyzer()">
+        <button class="btn btn-ghost" onclick="pasteIn()" data-i18n="paste">Pegar</button>
+      </div>
+      <div class="chips" id="chips"></div>
+      <p class="muted small" data-i18n="anPrivacy">Todo se calcula en tu navegador: no se envía ni se visita nada.</p>
+      <div id="anOut"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <a href="https://www.unfantasmaenelsistema.com" target="_blank" rel="noopener" class="footer-brand">
+    <img src="icono.png" alt="Un Fantasma en el Sistema" width="28" height="28">
+    <div style="display:flex;flex-direction:column;line-height:1.2">
+      <span class="footer-name">Un Fantasma en el Sistema</span>
+      <span class="footer-sub">unfantasmaenelsistema.com</span>
+    </div>
+  </a>
+  <div class="footer-links">
+    <span data-i18n="fLocal">Todo funciona en tu navegador</span><span>·</span>
+    <a href="https://github.com/unfantasmaenelsistema/Phishing-Homografico" target="_blank" rel="noopener">GitHub</a><span>·</span>
+    <span>MIT</span>
+  </div>
+</footer>
+
+<script src="homoglyph.js"></script>
+<script src="emails.js"></script>
 <script>
-    const questions = [
-        {
-            subject: "¡Alerta de Seguridad! Su cuenta ha sido bloqueada temporalmente.",
-            sender: "Security@paypal.com",
-            text: "Hemos detectado un inicio de sesión inusual. Por favor, haga click en el enlace para verificar su identidad y desbloquear su cuenta.",
-            link: "https://www.раypal.com/verify-account", // 'p' y 'a' cirílicos
-            isPhishing: true,
-            explanation: "PHISHING: El dominio es 'p**а**ypal.com'. La letra 'a' es cirílica (U+0430) y no la 'a' latina."
-        },
-        {
-            subject: "Factura de su compra en Apple - Recibo #987654",
-            sender: "noreply@apple.com",
-            text: "Gracias por su reciente compra. Adjuntamos su factura. Si no reconoce esta compra, puede cancelarla aquí.",
-            link: "https://www.apple.com/account/cancel-purchase",
-            isPhishing: false,
-            explanation: "LEGÍTIMO: El dominio es 'apple.com'. Es la URL oficial de Apple."
-        },
-        {
-            subject: "Su clave de acceso ha expirado, actualice inmediatamente.",
-            sender: "support@google.com",
-            text: "Por motivos de seguridad, su contraseña ha expirado. Siga el enlace para establecer una nueva contraseña de inmediato.",
-            link: "https://acco**u**nts.g**o**ogle.com/update-password", // 'u' y 'o' latinas
-            isPhishing: false,
-            explanation: "LEGÍTIMO: El dominio es 'accounts.google.com'. No hay caracteres cirílicos."
-        },
-        {
-            subject: "¡Ganador! Reclame su premio de fidelidad.",
-            sender: "promotions@microsoft.com",
-            text: "¡Felicidades! Ha sido seleccionado como ganador. Reclame su premio haciendo click en el enlace de abajo.",
-            link: "https://microsоft.com/prize/claim", // 'o' cirílica
-            isPhishing: true,
-            explanation: "PHISHING: El dominio es 'micros**о**ft.com'. La letra 'o' es cirílica (U+043E) y no la 'o' latina."
-        },
-        {
-            subject: "Notificación de envío de Amazon - Su paquete está listo.",
-            sender: "shipment@amazon.com",
-            text: "Su paquete #XYZ123 está listo para ser enviado. Por favor, confirme su dirección haciendo click en el enlace.",
-            link: "https://www.amazоn.com/confirm-address", // 'o' cirílica
-            isPhishing: true,
-            explanation: "PHISHING: El dominio es 'amaz**о**n.com'. La letra 'o' es cirílica (U+043E) y no la 'o' latina."
-        },
-        {
-            subject: "Ha recibido un nuevo mensaje de WhatsApp",
-            sender: "notificaciones@whatsapp.com",
-            text: "Alguien ha intentado enviarle un mensaje. Haga click aquí para verlo en línea.",
-            link: "https://web.whаtsapp.com/view-message", // 'a' cirílica
-            isPhishing: true,
-            explanation: "PHISHING: El dominio es 'wh**а**tsapp.com'. La letra 'a' es cirílica (U+0430) y no la 'a' latina."
-        },
-        {
-            subject: "Actualización de Términos de Servicio - Requerida su acción",
-            sender: "support@dropbox.com",
-            text: "Hemos actualizado nuestros Términos de Servicio. Por favor, revíselos y acéptelos para continuar usando nuestros servicios.",
-            link: "https://www.dr**o**pb**o**x.com/terms-update", // 'o' y 'o' latinas
-            isPhishing: false,
-            explanation: "LEGÍTIMO: El dominio es 'dropbox.com'. No hay caracteres cirílicos."
-        },
-        {
-            subject: "Verificación de Cuenta de Netflix Requerida",
-            sender: "noreply@netflix.com",
-            text: "Su información de pago ha sido rechazada. Actualice su información de pago para evitar la interrupción del servicio.",
-            link: "https://www.netfl**i**x.com/payment-update", // 'i' latina
-            isPhishing: false,
-            explanation: "LEGÍTIMO: El dominio es 'netflix.com'. No hay caracteres cirílicos."
-        },
-        {
-            subject: "Hemos detectado un error de sistema. Por favor, inicie sesión.",
-            sender: "noreply@sistema.com",
-            text: "Se ha detectado un error crítico en su cuenta. Inicie sesión en el enlace a continuación para corregirlo.",
-            link: "https://sistеma.com/login", // 'e' cirílica
-            isPhishing: true,
-            explanation: "PHISHING: El dominio es 'sist**е**ma.com'. La letra 'e' es cirílica (U+0435) y no la 'e' latina."
-        },
-        {
-            subject: "Su pedido ha sido completado y enviado.",
-            sender: "ventas@tiendaonline.com",
-            text: "Gracias por su compra. El seguimiento de su pedido está disponible en el siguiente enlace.",
-            link: "https://tiendaonline.c**o**m/track-order", // 'o' latina
-            isPhishing: false,
-            explanation: "LEGÍTIMO: El dominio es 'tiendaonline.com'. No hay caracteres cirílicos."
-        }
-    ];
+'use strict';
+var I18N = {
+  es: {
+    tabTest:'Test', tabAn:'Analizador de dominios',
+    introTitle:'¿Distinguirías un dominio falso que se ve idéntico al real?',
+    introLead:'El phishing homográfico registra dominios que cambian letras latinas por otras de alfabetos distintos (cirílico, griego…) que se dibujan igual. A la vista es el mismo nombre; para Internet es otro dominio, de otra persona.',
+    cmpReal:'Real', cmpFake:'Falso (р y а cirílicas)',
+    introHow:'Lo de abajo de cada caja es lo que el sistema de nombres de dominio (DNS) ve de verdad. Los dominios con letras que no son ASCII se registran en <b>punycode</b>, con el prefijo <code>xn--</code>: por eso <code>xn--ypal-43d9g.com</code> no tiene nada que ver con PayPal.',
+    introTest:'Cómo va el test',
+    tip1:'Verás <b>10 correos</b> elegidos al azar de un banco de 16. Algunos enlazan al dominio auténtico y otros a un homógrafo.',
+    tip2:'Decide solo mirando el <b>dominio del enlace</b>: el texto del correo es igual de convincente en los dos casos, como en la vida real.',
+    tip3:'Tras cada respuesta verás letra por letra qué carácter era el impostor y su código Unicode.',
+    tip4:'Atajos: <b>L</b> legítimo · <b>P</b> phishing · <b>Intro</b> siguiente.',
+    start:'Empezar el test', from:'De:', to:'Para:', toYou:'tú', hello:'Hola:',
+    orCopy:'Si el botón no funciona, copie este enlace en su navegador:',
+    statusTitle:'Así aparece el enlace al pasar el ratón', statusHint:'Pasa el ratón por el botón o el enlace para ver adónde lleva.',
+    legit:'✅ Legítimo', phish:'⚠️ Phishing', counter:'Correo {n} de {t}', score:'Aciertos: {s}',
+    next:'Siguiente correo', finish:'Ver resultado',
+    okTitle:'¡Correcto!', koTitle:'Incorrecto',
+    wasPhish:'Era phishing.', wasLegit:'Era legítimo.',
+    impostor:'{ch} es {script} ({code}) y se hace pasar por «{lat}».',
+    whole:'Todas las letras de «{label}» son de otro alfabeto: no hay ni una latina.',
+    legitWhy:'Todas las letras del dominio son latinas básicas (ASCII): es el dominio auténtico.',
+    dnsReal:'Dominio que se ve', dnsAscii:'Lo que registra el DNS', looksLike:'Se hace pasar por',
+    resTitle:'Resultado', resReview:'Repaso',
+    msg:['Hay que repasar: los homógrafos son difíciles a simple vista, por eso funcionan.','Bien, pero alguno se te ha colado. Fíjate en el detalle de cada fallo.','¡Muy bien! Tienes buen ojo para los dominios.','¡Perfecto! Ni una sola letra impostora se te ha escapado.'],
+    resNote:'<b>Ojo con «legítimo».</b> Aquí significa que el enlace va al dominio auténtico. Un correo puede llevar un remitente suplantado y aun así ser fraude: si te pide datos o prisa, entra tú escribiendo la dirección o desde la app oficial.',
+    defTitle:'Cómo protegerte',
+    def1:'Usa un <b>gestor de contraseñas</b>: rellena por dominio exacto y no reconocerá <code>xn--ypal-43d9g.com</code> como PayPal.',
+    def2:'No entres a bancos ni tiendas desde enlaces de correos o SMS: escribe la dirección o usa un marcador.',
+    def3:'Si la barra de direcciones muestra <code>xn--</code> en un sitio que crees conocer, sal de ahí: los navegadores lo enseñan así cuando detectan mezcla de alfabetos.',
+    def4:'¿Dudas con un enlace? Pégalo en el <a href="#" onclick="showTab(\'an\');return false">analizador</a>.',
+    again:'Repetir con otros correos', tagPh:'phishing', tagLg:'legítimo',
+    anTitle:'Analizador de dominios',
+    anLead:'Pega un enlace, un dominio o una dirección de correo. Te dice qué alfabeto usa cada letra, a qué letra latina imita y cómo se registra de verdad.',
+    paste:'Pegar', anPrivacy:'Todo se calcula en tu navegador: no se envía ni se visita nada.',
+    anEmpty:'Escribe o pega algo, o prueba uno de los ejemplos.', anInvalid:'Eso no parece un dominio válido.',
+    thChar:'Carácter', thCode:'Código', thScript:'Alfabeto', thImit:'Imita a',
+    sc:{ascii:'Latino básico',latin:'Latino con diacrítico',greek:'Griego',cyrillic:'Cirílico',armenian:'Armenio',other:'Otro',common:'Dígito / guion'},
+    v:{
+      ascii:['Sin homógrafos Unicode','Solo letras ASCII. Ojo: aún puede ser un dominio parecido escrito con letras normales (typosquatting, como paypa1.com o rnicrosoft.com).'],
+      'idn-latin':['Dominio internacional normal','Usa letras latinas con tilde o diéresis (ñ, á, ü…), habituales en dominios en español, alemán o francés. No mezcla alfabetos.'],
+      'idn-other':['Otro alfabeto, sin imitar al latino','Está escrito en un alfabeto no latino pero sus letras no se hacen pasar por latinas (p. ej. dominios rusos en .рф).'],
+      mixed:['PELIGRO: mezcla de alfabetos','Una misma parte del dominio mezcla letras latinas con cirílicas o griegas. Es la firma típica del phishing homográfico; los navegadores modernos lo muestran como xn--.'],
+      wholescript:['PELIGRO: suplantación con alfabeto completo','Una parte del dominio está entera en otro alfabeto pero se lee como letras latinas. No mezcla alfabetos, así que algunos filtros no lo detectan.']
+    },
+    normalized:'Contenía caracteres de ancho completo (ｇ…): el navegador los convierte a ASCII al resolver, así que no engañan al DNS.',
+    fromPuny:'Has pegado punycode (xn--): lo he descodificado para ver las letras reales.',
+    fLocal:'Todo funciona en tu navegador', themeTitle:'Cambiar tema', langTitle:'English', placeholder:'https://www.ejemplo.com/ruta'
+  },
+  en: {
+    tabTest:'Quiz', tabAn:'Domain analyser',
+    introTitle:'Could you spot a fake domain that looks identical to the real one?',
+    introLead:'Homograph phishing registers domains that swap Latin letters for look-alike letters from other alphabets (Cyrillic, Greek…). To your eyes it is the same name; to the Internet it is a different domain owned by someone else.',
+    cmpReal:'Real', cmpFake:'Fake (Cyrillic р and а)',
+    introHow:'The line under each box is what the Domain Name System (DNS) really sees. Domains with non-ASCII letters are registered in <b>punycode</b>, with the <code>xn--</code> prefix: that is why <code>xn--ypal-43d9g.com</code> has nothing to do with PayPal.',
+    introTest:'How the quiz works',
+    tip1:'You will see <b>10 emails</b> picked at random from a pool of 16. Some link to the genuine domain and others to a homograph.',
+    tip2:'Decide by looking only at the <b>link\'s domain</b>: the email text is equally convincing in both cases, just like in real life.',
+    tip3:'After each answer you will see, letter by letter, which character was the impostor and its Unicode code point.',
+    tip4:'Shortcuts: <b>L</b> legit · <b>P</b> phishing · <b>Enter</b> next.',
+    start:'Start the quiz', from:'From:', to:'To:', toYou:'you', hello:'Hello,',
+    orCopy:'If the button does not work, copy this link into your browser:',
+    statusTitle:'How the link appears on hover', statusHint:'Hover over the button or the link to see where it goes.',
+    legit:'✅ Legit', phish:'⚠️ Phishing', counter:'Email {n} of {t}', score:'Correct: {s}',
+    next:'Next email', finish:'See result',
+    okTitle:'Correct!', koTitle:'Wrong',
+    wasPhish:'It was phishing.', wasLegit:'It was legit.',
+    impostor:'{ch} is {script} ({code}) posing as “{lat}”.',
+    whole:'Every letter in “{label}” comes from another alphabet: not a single Latin one.',
+    legitWhy:'Every letter in the domain is basic Latin (ASCII): it is the genuine domain.',
+    dnsReal:'Domain as shown', dnsAscii:'What DNS registers', looksLike:'Posing as',
+    resTitle:'Result', resReview:'Review',
+    msg:['Time to review: homographs are hard to see, that is why they work.','Good, but a few slipped past you. Check the detail of each miss.','Very good! You have a sharp eye for domains.','Perfect! Not a single impostor letter got past you.'],
+    resNote:'<b>Careful with “legit”.</b> Here it means the link goes to the genuine domain. An email can still carry a spoofed sender and be a scam: if it asks for data or urgency, go there yourself by typing the address or using the official app.',
+    defTitle:'How to protect yourself',
+    def1:'Use a <b>password manager</b>: it fills in by exact domain and will not recognise <code>xn--ypal-43d9g.com</code> as PayPal.',
+    def2:'Do not log in to banks or shops from email or text links: type the address or use a bookmark.',
+    def3:'If the address bar shows <code>xn--</code> on a site you think you know, leave: browsers show it that way when they detect mixed alphabets.',
+    def4:'Unsure about a link? Paste it into the <a href="#" onclick="showTab(\'an\');return false">analyser</a>.',
+    again:'Play again with other emails', tagPh:'phishing', tagLg:'legit',
+    anTitle:'Domain analyser',
+    anLead:'Paste a link, a domain or an email address. It tells you which alphabet each letter comes from, which Latin letter it imitates and how it is really registered.',
+    paste:'Paste', anPrivacy:'Everything is computed in your browser: nothing is sent or visited.',
+    anEmpty:'Type or paste something, or try one of the examples.', anInvalid:'That does not look like a valid domain.',
+    thChar:'Character', thCode:'Code', thScript:'Alphabet', thImit:'Imitates',
+    sc:{ascii:'Basic Latin',latin:'Latin with diacritic',greek:'Greek',cyrillic:'Cyrillic',armenian:'Armenian',other:'Other',common:'Digit / hyphen'},
+    v:{
+      ascii:['No Unicode homographs','ASCII letters only. Note: it can still be a look-alike written with normal letters (typosquatting, like paypa1.com or rnicrosoft.com).'],
+      'idn-latin':['Normal international domain','It uses accented Latin letters (ñ, á, ü…), common in Spanish, German or French domains. It does not mix alphabets.'],
+      'idn-other':['Another alphabet, not imitating Latin','It is written in a non-Latin alphabet but its letters do not pose as Latin ones (e.g. Russian .рф domains).'],
+      mixed:['DANGER: mixed alphabets','A single part of the domain mixes Latin letters with Cyrillic or Greek ones. This is the classic homograph phishing signature; modern browsers show it as xn--.'],
+      wholescript:['DANGER: whole-script spoof','A part of the domain is entirely in another alphabet yet reads as Latin letters. It does not mix alphabets, so some filters miss it.']
+    },
+    normalized:'It contained full-width characters (ｇ…): the browser converts them to ASCII when resolving, so they do not fool DNS.',
+    fromPuny:'You pasted punycode (xn--): I decoded it to show the real letters.',
+    fLocal:'Everything runs in your browser', themeTitle:'Toggle theme', langTitle:'Español', placeholder:'https://www.example.com/path'
+  }
+};
+var lang = 'es';
+try { lang = localStorage.getItem('phh-lang') || ((navigator.language || 'es').slice(0,2) === 'es' ? 'es' : 'en'); } catch (e) {}
+if (!I18N[lang]) lang = 'es';
+function t(k, vars) {
+  var s = I18N[lang][k]; if (s === undefined) s = I18N.es[k];
+  if (vars && typeof s === 'string') s = s.replace(/\{(\w+)\}/g, function (_, v) { return vars[v]; });
+  return s;
+}
+function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]; }); }
 
-    let currentQuestionIndex = 0;
-    let score = 0;
+function applyI18n() {
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-i18n]').forEach(function (el) { el.textContent = t(el.getAttribute('data-i18n')); });
+  document.querySelectorAll('[data-i18n-html]').forEach(function (el) { el.innerHTML = t(el.getAttribute('data-i18n-html')); });
+  document.querySelectorAll('[data-i18n-title]').forEach(function (el) { el.title = t(el.getAttribute('data-i18n-title')); });
+  var lb = document.getElementById('langToggle');
+  lb.textContent = lang === 'es' ? 'EN' : 'ES'; lb.title = t('langTitle');
+  document.getElementById('themeToggle').title = t('themeTitle');
+  document.getElementById('anIn').placeholder = t('placeholder');
+  renderChips();
+  if (!quizEl.classList.contains('hidden')) renderQuestion(true);
+  if (!resultsEl.classList.contains('hidden')) renderResults();
+  runAnalyzer();
+}
+function toggleLang() { lang = lang === 'es' ? 'en' : 'es'; try { localStorage.setItem('phh-lang', lang); } catch (e) {} applyI18n(); }
+function syncThemeBtn() { document.getElementById('themeToggle').textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀' : '☾'; }
+function toggleTheme() {
+  var n = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', n);
+  try { localStorage.setItem('phh-theme', n); } catch (e) {}
+  syncThemeBtn();
+}
 
-    const introScreen = document.getElementById('intro-screen');
-    const quizScreen = document.getElementById('quiz-screen');
-    const resultScreen = document.getElementById('result-screen');
-    const questionCounter = document.getElementById('question-counter');
-    const emailSubject = document.getElementById('email-subject');
-    const emailSender = document.getElementById('email-sender');
-    const emailText = document.getElementById('email-text');
-    const emailLink = document.getElementById('email-link');
-    const feedbackMessage = document.getElementById('feedback-message');
-    const nextButton = document.getElementById('next-button');
-    const resultSummary = document.getElementById('result-summary');
-    const buttons = document.querySelectorAll('.buttons .button');
-    const mainTitle = document.getElementById('main-title');
+function showTab(which) {
+  document.getElementById('panel-test').classList.toggle('hidden', which !== 'test');
+  document.getElementById('panel-an').classList.toggle('hidden', which !== 'an');
+  document.getElementById('tab-test').classList.toggle('active', which === 'test');
+  document.getElementById('tab-an').classList.toggle('active', which === 'an');
+  if (which === 'an') document.getElementById('anIn').focus();
+  window.scrollTo(0, 0);
+}
 
-    function startQuiz() {
-        introScreen.classList.add('hidden');
-        quizScreen.classList.remove('hidden');
-        mainTitle.textContent = "Test de Phishing Homográfico"; // Asegurarse de que el título esté correcto
-        loadQuestion();
-    }
+/* ─── Detalle de un dominio (compartido por el test y el analizador) ─── */
+function hostHTML(a) {
+  return '<div class="host">' + a.chars.map(function (c) {
+    if (c.dot) return '<span class="dot">.</span>';
+    if (c.suspicious) return '<span class="sus" title="' + esc(t('sc')[c.script] + ' ' + c.code + (c.imitates ? ' → ' + c.imitates : '')) + '">' + esc(c.ch) + '</span>';
+    return '<span>' + esc(c.ch) + '</span>';
+  }).join('') + '</div>';
+}
+function factsHTML(a) {
+  var h = '<dl class="facts"><dt>' + t('dnsReal') + '</dt><dd class="seen">' + esc(a.host) + '</dd><dt>' + t('dnsAscii') + '</dt><dd>' + esc(a.ascii || '—') + '</dd>';
+  if (a.danger) h += '<dt>' + t('looksLike') + '</dt><dd>' + esc(a.skeleton) + '</dd>';
+  return h + '</dl>';
+}
+function impostorLines(a) {
+  var labels = a.host.split('.'), out = [], seen = {};
+  if (a.verdict === 'wholescript') {
+    var byLabel = {};
+    a.chars.forEach(function (c) { if (c.suspicious) byLabel[c.label] = 1; });
+    Object.keys(byLabel).forEach(function (li) { out.push(t('whole', { label: labels[li] })); });
+  }
+  a.chars.forEach(function (c) {
+    if (!c.suspicious || seen[c.ch]) return; seen[c.ch] = 1;
+    out.push(t('impostor', { ch: '«' + c.ch + '»', script: lang === 'es' ? t('sc')[c.script].toLowerCase() : t('sc')[c.script], code: c.code, lat: c.imitates || '?' }));
+  });
+  return out;
+}
 
-    function loadQuestion() {
-        if (currentQuestionIndex >= questions.length) {
-            showResults();
-            return;
-        }
+/* ─── Test ─── */
+var introEl = document.getElementById('intro'), quizEl = document.getElementById('quiz'), resultsEl = document.getElementById('results');
+var deck = [], qi = 0, score = 0, answers = [];
+EMAILS.forEach(function (e) { e.analysis = Homoglyph.analyze(e.link); e.isPhishing = e.analysis.danger; });
 
-        const q = questions[currentQuestionIndex];
-        
-        questionCounter.textContent = `Correo ${currentQuestionIndex + 1} de ${questions.length}`;
-        emailSubject.textContent = q.subject;
-        emailSender.textContent = q.sender;
-        emailText.textContent = q.text;
-        emailLink.textContent = q.link;
-        emailLink.href = '#'; // Prevenir navegación real
-        
-        // Resetear estado
-        feedbackMessage.style.display = 'none';
-        feedbackMessage.className = 'feedback';
-        nextButton.classList.add('hidden');
-        buttons.forEach(btn => btn.disabled = false);
-    }
+function shuffle(arr) { for (var i = arr.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var x = arr[i]; arr[i] = arr[j]; arr[j] = x; } return arr; }
+function startQuiz() {
+  var ph = shuffle(EMAILS.filter(function (e) { return e.isPhishing; }));
+  var lg = shuffle(EMAILS.filter(function (e) { return !e.isPhishing; }));
+  var nPh = 5 + Math.floor(Math.random() * 3);              // 5–7 homógrafos, el resto auténticos
+  deck = shuffle(ph.slice(0, nPh).concat(lg.slice(0, 10 - nPh)));
+  qi = 0; score = 0; answers = [];
+  introEl.classList.add('hidden'); resultsEl.classList.add('hidden'); quizEl.classList.remove('hidden');
+  showTab('test'); renderQuestion(false);
+}
+function renderQuestion(keepFeedback) {
+  var e = deck[qi], L = e[lang];
+  document.getElementById('qCounter').textContent = t('counter', { n: qi + 1, t: deck.length });
+  document.getElementById('qScore').textContent = t('score', { s: score });
+  document.getElementById('qBar').style.width = (qi / deck.length * 100) + '%';
+  document.getElementById('mSubject').textContent = L.subject;
+  document.getElementById('mFrom').textContent = e.sender;
+  document.getElementById('mBody').textContent = L.body;
+  document.getElementById('mCta').textContent = L.cta;
+  document.getElementById('mLink').textContent = e.link;
+  document.getElementById('mStatus').textContent = t('statusHint');
+  var answered = answers.length > qi;
+  document.getElementById('bLegit').disabled = answered;
+  document.getElementById('bPhish').disabled = answered;
+  if (answered && keepFeedback) renderFeedback(); else {
+    document.getElementById('feedback').classList.add('hidden');
+    document.getElementById('nextWrap').classList.add('hidden');
+  }
+}
+function answer(saysPhishing) {
+  if (answers.length > qi) return;
+  var e = deck[qi], ok = saysPhishing === e.isPhishing;
+  if (ok) score++;
+  answers.push({ e: e, ok: ok, said: saysPhishing });
+  document.getElementById('bLegit').disabled = true;
+  document.getElementById('bPhish').disabled = true;
+  document.getElementById('qScore').textContent = t('score', { s: score });
+  document.getElementById('qBar').style.width = ((qi + 1) / deck.length * 100) + '%';
+  renderFeedback();
+}
+function renderFeedback() {
+  var r = answers[qi], e = r.e, a = e.analysis;
+  var lines = a.danger ? impostorLines(a) : [t('legitWhy')];
+  var h = '<div class="fb ' + (r.ok ? 'ok' : 'ko') + '"><div class="fb-title">' + (r.ok ? t('okTitle') : t('koTitle')) + ' ' + (e.isPhishing ? t('wasPhish') : t('wasLegit')) + '</div>' +
+    hostHTML(a) + lines.map(function (l) { return '<p style="margin-bottom:6px">' + esc(l) + '</p>'; }).join('') + factsHTML(a) + '</div>';
+  var fb = document.getElementById('feedback'); fb.innerHTML = h; fb.classList.remove('hidden');
+  document.getElementById('bNext').textContent = qi === deck.length - 1 ? t('finish') : t('next');
+  document.getElementById('nextWrap').classList.remove('hidden');
+  document.getElementById('bNext').focus({ preventScroll: true });
+  fb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+function nextQ() {
+  if (answers.length <= qi) return;
+  if (qi === deck.length - 1) { quizEl.classList.add('hidden'); resultsEl.classList.remove('hidden'); renderResults(); window.scrollTo(0, 0); return; }
+  qi++; renderQuestion(false); quizEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function renderResults() {
+  document.getElementById('rScore').textContent = score + ' / ' + deck.length;
+  var m = t('msg'), idx = score === deck.length ? 3 : score >= 8 ? 2 : score >= 5 ? 1 : 0;
+  document.getElementById('rMsg').textContent = m[idx];
+  document.getElementById('rList').innerHTML = answers.map(function (r) {
+    return '<li><span class="mark">' + (r.ok ? '✔️' : '❌') + '</span><span class="dom">' + esc(r.e.analysis.host) + '</span><span class="tag ' + (r.e.isPhishing ? 'ph">' + t('tagPh') : 'lg">' + t('tagLg')) + '</span></li>';
+  }).join('');
+}
+// La «barra de estado» del correo: lo que verías al pasar el ratón.
+['mCta', 'mLink'].forEach(function (id) {
+  var el = document.getElementById(id);
+  el.addEventListener('mouseenter', function () { if (deck[qi]) document.getElementById('mStatus').textContent = deck[qi].link; });
+  el.addEventListener('mouseleave', function () { document.getElementById('mStatus').textContent = t('statusHint'); });
+});
+document.addEventListener('keydown', function (ev) {
+  if (quizEl.classList.contains('hidden') || ev.ctrlKey || ev.metaKey || ev.altKey) return;
+  var k = ev.key.toLowerCase();
+  if (k === 'l') answer(false);
+  else if (k === 'p') answer(true);
+  else if (k === 'enter' && answers.length > qi && document.activeElement !== document.getElementById('bNext')) { ev.preventDefault(); nextQ(); }
+});
 
-    function checkAnswer(isLegit) {
-        const q = questions[currentQuestionIndex];
-        const isCorrect = (isLegit === !q.isPhishing); // isLegit=true & isPhishing=false O isLegit=false & isPhishing=true
-        
-        if (isCorrect) {
-            score++;
-            feedbackMessage.textContent = '¡Correcto! ' + (q.isPhishing ? 'Es Phishing.' : 'Es Legítimo.');
-            feedbackMessage.classList.add('correct-answer');
-        } else {
-            feedbackMessage.textContent = '¡Incorrecto! ' + q.explanation;
-            feedbackMessage.classList.add('wrong-answer');
-        }
+/* ─── Analizador ─── */
+var EXAMPLES = ['https://www.раypal.com/login', 'аррӏе.com', 'gοogle.com', 'xn--80ak6aa92e.com', 'españa.es', 'яндекс.рф', 'paypa1.com'];
+function renderChips() {
+  document.getElementById('chips').innerHTML = EXAMPLES.map(function (x, i) { return '<button class="chip" onclick="useExample(' + i + ')">' + esc(x) + '</button>'; }).join('');
+}
+function useExample(i) { var inp = document.getElementById('anIn'); inp.value = EXAMPLES[i]; runAnalyzer(); }
+function pasteIn() {
+  if (!navigator.clipboard || !navigator.clipboard.readText) { document.getElementById('anIn').focus(); return; }
+  navigator.clipboard.readText().then(function (s) { document.getElementById('anIn').value = s; runAnalyzer(); }).catch(function () { document.getElementById('anIn').focus(); });
+}
+function runAnalyzer() {
+  var out = document.getElementById('anOut'), v = document.getElementById('anIn').value;
+  if (!v.trim()) { out.innerHTML = '<p class="muted" style="margin-top:14px">' + t('anEmpty') + '</p>'; return; }
+  var a = Homoglyph.analyze(v);
+  if (!a.valid || !a.host) { out.innerHTML = '<div class="verdict info"><b>' + t('anInvalid') + '</b></div>'; return; }
+  var vv = t('v')[a.verdict], cls = a.danger ? 'danger' : a.verdict === 'ascii' ? 'safe' : 'info';
+  var h = hostHTML(a) + factsHTML(a) + '<div class="verdict ' + cls + '"><b>' + vv[0] + '</b>' + vv[1] + '</div>';
+  if (a.fromPunycode) h += '<p class="muted small" style="margin-top:10px">' + t('fromPuny') + '</p>';
+  if (a.normalized) h += '<p class="muted small" style="margin-top:10px">' + t('normalized') + '</p>';
+  if (a.danger) h += '<div style="margin-top:12px">' + impostorLines(a).map(function (l) { return '<p style="margin-bottom:6px">' + esc(l) + '</p>'; }).join('') + '</div>';
+  var rows = a.chars.filter(function (c) { return !c.dot; }).map(function (c) {
+    return '<tr' + (c.suspicious ? ' class="sus"' : '') + '><td class="g">' + esc(c.ch) + '</td><td>' + c.code + '</td><td>' + t('sc')[c.script] + '</td><td>' + (c.imitates && c.script !== 'ascii' ? esc(c.imitates) : '') + '</td></tr>';
+  }).join('');
+  h += '<table class="chars"><thead><tr><th>' + t('thChar') + '</th><th>' + t('thCode') + '</th><th>' + t('thScript') + '</th><th>' + t('thImit') + '</th></tr></thead><tbody>' + rows + '</tbody></table>';
+  out.innerHTML = h;
+}
 
-        // Mostrar retroalimentación
-        feedbackMessage.style.display = 'block';
-        nextButton.classList.remove('hidden');
-        buttons.forEach(btn => btn.disabled = true);
-    }
-
-    function nextQuestion() {
-        currentQuestionIndex++;
-        loadQuestion();
-    }
-
-    function showResults() {
-        quizScreen.classList.add('hidden');
-        resultScreen.classList.remove('hidden');
-        resultSummary.innerHTML = `Su puntuación final es: <strong>${score} / ${questions.length}</strong>`;
-        mainTitle.textContent = "Test Finalizado";
-    }
-
+/* ─── Arranque ─── */
+(function () {
+  var demo = Homoglyph.analyze('раypal.com');
+  document.getElementById('demoFake').textContent = demo.host;
+  document.getElementById('demoFakeAscii').textContent = demo.ascii;
+  syncThemeBtn(); applyI18n();
+})();
 </script>
-
-<hr> 
-    <footer>        
-        <p>&copy; 2025 www.unfantasmaenelsistema.com </p>    
-    </footer>
-
 </body>
 </html>
-```
