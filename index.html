@@ -35,6 +35,8 @@ a{color:var(--accent2)}
 button{font-family:inherit}
 code{font-family:Consolas,'Courier New',monospace;font-size:.92em;background:var(--panel2);border:1px solid var(--border);padding:1px 6px;border-radius:5px}
 
+.sim-note{background:#fef3c7;color:#78350f;border-bottom:1px solid #f59e0b;font-size:13px;line-height:1.4;padding:7px 16px;text-align:center}
+.sim-note a{color:inherit;font-weight:600}
 header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 24px;border-bottom:1px solid var(--border);background:color-mix(in srgb,var(--panel) 88%,transparent);position:sticky;top:0;z-index:10;backdrop-filter:blur(8px)}
 .logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)}
 .logo img{width:38px;height:38px;border-radius:50%;transition:transform .25s}
@@ -171,6 +173,8 @@ table.chars tr.sus td{color:var(--bad);font-weight:700}
 </head>
 <body>
 
+<div class="sim-note" role="note" data-i18n-html="simNote"><b>Página educativa</b> de <a href="https://www.unfantasmaenelsistema.com" target="_blank" rel="noopener">Un Fantasma en el Sistema</a> para aprender a detectar phishing. Los correos son ejemplos inventados, sus enlaces no llevan a ninguna parte y aquí nunca se piden datos.</div>
+
 <header>
   <a href="https://www.unfantasmaenelsistema.com" target="_blank" rel="noopener" class="logo">
     <img src="icono.png" alt="Un Fantasma en el Sistema">
@@ -304,6 +308,7 @@ table.chars tr.sus td{color:var(--bad);font-weight:700}
 var I18N = {
   es: {
     tabTest:'Test', tabAn:'Analizador de dominios',
+    simNote:'<b>Página educativa</b> de <a href="https://www.unfantasmaenelsistema.com" target="_blank" rel="noopener">Un Fantasma en el Sistema</a> para aprender a detectar phishing. Los correos son ejemplos inventados, sus enlaces no llevan a ninguna parte y aquí nunca se piden datos.',
     introTitle:'¿Distinguirías un dominio falso que se ve idéntico al real?',
     introLead:'El phishing homográfico registra dominios que cambian letras latinas por otras de alfabetos distintos (cirílico, griego…) que se dibujan igual. A la vista es el mismo nombre; para Internet es otro dominio, de otra persona.',
     cmpReal:'Real', cmpFake:'Falso (р y а cirílicas)',
@@ -352,6 +357,7 @@ var I18N = {
   },
   en: {
     tabTest:'Quiz', tabAn:'Domain analyser',
+    simNote:'<b>Educational page</b> by <a href="https://www.unfantasmaenelsistema.com" target="_blank" rel="noopener">Un Fantasma en el Sistema</a> to learn how to spot phishing. The emails are made-up examples, their links go nowhere and no data is ever requested here.',
     introTitle:'Could you spot a fake domain that looks identical to the real one?',
     introLead:'Homograph phishing registers domains that swap Latin letters for look-alike letters from other alphabets (Cyrillic, Greek…). To your eyes it is the same name; to the Internet it is a different domain owned by someone else.',
     cmpReal:'Real', cmpFake:'Fake (Cyrillic р and а)',
